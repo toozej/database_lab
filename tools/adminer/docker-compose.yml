@@ -1,0 +1,79 @@
+version: '3'
+services:
+  adminer:
+    image: adminer:latest
+    container_name: "adminer"
+    restart: always
+    depends_on:
+      - adminer_mysql
+      - adminer_mariadb
+      - adminer_pgsql
+      - adminer_sqlite
+    ports:
+      - "8014:8080"
+    labels: 
+      - "traefik.frontend.rule=Host:adminer.int.toozej.com"
+      - "traefik.frontend.headers.STSSeconds=31536000"
+      - "traefik.docker.network=traefik"
+      - "com.centurylinklabs.watchtower.enable=true"
+    networks:
+      - backend
+      - traefik
+    env_file:
+      - adminer.env
+  adminer_mysql:
+    container_name: adminer_mysql
+    image: mysql:5.7
+    restart: always
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - backend
+    volumes: 
+      - "./mysql:/var/lib/mysql"
+    env_file:
+      - mysql.env
+  adminer_pgsql:
+    image: postgres:latest
+    container_name: adminer_pgsql
+    env_file:
+      - pgsql.env
+    volumes:
+      - ./pgsql:/var/lib/postgresql/data
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - backend
+    restart: always
+  adminer_mariadb:
+    container_name: adminer_mariadb
+    image: mariadb:latest
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./mariadb:/var/lib/mysql
+    env_file:
+      - mariadb.env
+    restart: always
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - backend
+  adminer_sqlite:
+    container_name: adminer_sqlite
+    image: nouchka/sqlite3:latest
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./sqlite:/root/db
+    restart: always
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - backend
+networks:
+  traefik:
+    external:
+      name: traefik
+  backend:
+    driver: bridge
