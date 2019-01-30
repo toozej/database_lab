@@ -12,7 +12,7 @@ DATABASE_LAB_DIR=~/docker/database_lab
 echo "setting up database_lab"
 
 
-# ensure docker and mobile_homelab dirs exist
+# ensure docker and database_lab dirs exist
 if [ ! -d "$DOCKER_DIR" ]; then
     echo "making $DOCKER_DIR"
     mkdir $DOCKER_DIR
@@ -24,9 +24,9 @@ fi
 # clone repo from github
 if [ ! -d "$DATABASE_LAB_DIR" ]; then
     echo "cloning down mobile_homelab from Github"
-    git clone https://github.com/toozej/mobile_homelab.git $DATABASE_LAB_DIR
+    git clone https://github.com/toozej/database_lab.git $DATABASE_LAB_DIR
 else
-    echo "mobile_homelab already exists at $DATABASE_LAB_DIR, pulling"
+    echo "database_lab already exists at $DATABASE_LAB_DIR, pulling"
     cd $DATABASE_LAB_DIR
     git pull
 fi
@@ -35,9 +35,14 @@ fi
 # setup hostfile entries for projects
 echo "setting up hostfile entries for database_lab projects"
 cd $DATABASE_LAB_DIR
-for PROJECT in `find . -mindepth 1 -maxdepth 1 -type d -not -path '*/\.*'`; do
-    # remove prefix of "./"
-    ENTRY=${PROJECT:2}
+for PROJECT in `find . -mindepth 2 -maxdepth 2 -type d -not -path '*/\.*'`; do
+    if [[ $PROJECT == *"clusters"* ]]; then
+        ENTRY=basename $PROJECT"-cluster"
+    elif [[ $PROJECT == *"single"* ]]; then
+        ENTRY=basename $PROJECT"-single"
+    else
+        ENTRY=basename $PROJECT
+    fi
     # if there's not already a hostfile entry for $PROJECT, then add one
     if ! grep -q "$ENTRY.lab.test" /etc/hosts; then
         echo "127.0.0.1 $ENTRY.lab.test" | sudo tee -a /etc/hosts
@@ -105,9 +110,22 @@ else
     echo "traefik network already exists, skipping."
 fi
 
+# create the cluster database networks if not already created
+cd $DATABASE_LAB_DIR
+for PROJECT in `find ./clusters/ -mindepth 2 -maxdepth 2 -type d -not -path '*/\.*'`; do
+    DATABASE=basename $PROJECT
+    CLUSTER_DATABASE_NETWORK_OUTPUT=`sudo docker network ls | awk '{print $2}' | grep --color=none $DATABASE-cluster`
+    if [ "$CLUSTER_DATABASE_NETWORK_OUTPUT" != "$DATABASE-cluster" ]; then
+        echo "setting up $DATABASE-cluster network"
+        sudo $DOCKER_BIN network create $DATABASE-cluster
+    else
+        echo "$DATABASE-cluster network already exists, skipping."
+    fi
+done
+
 
 # pull images, build and start up projects
-for PROJECT in `find $DATABASE_LAB_DIR -mindepth 1 -maxdepth 1 -type d -not -path '*/\.*'`; do
+for PROJECT in `find $DATABASE_LAB_DIR -mindepth 2 -maxdepth 2 -type d -not -path '*/\.*'`; do
     if [ ! -f "$PROJECT/.do_not_autorun" ]; then
         echo "starting docker-compose project in $PROJECT"
         sudo $DOCKER_COMPOSE_BIN -f $PROJECT/docker-compose.yml pull --ignore-pull-failures
