@@ -1,0 +1,3 @@
+[submodule "testers/etcd-dbtester"]
+	path = testers/etcd-dbtester
+	url = https://github.com/etcd-io/dbtester
