@@ -152,7 +152,7 @@ done
 # pull images, build and start up database services for given command line arguments
 echo "starting database services from arguments"
 for ARGUMENT in "$@"; do
-    ARGUMENT_FIND=`find $DATABASE_LAB_DIR/single $DATABASE_LAB_DIR/clusters -mindepth 2 -maxdepth 2 -type d -not -path '*/\.*' | grep --color=none $ARGUMENT`
+    ARGUMENT_FIND=`find $DATABASE_LAB_DIR/single $DATABASE_LAB_DIR/clusters -mindepth 2 -maxdepth 2 -type d -not -path '*/\.*' | grep --color=none -i $ARGUMENT`
     if [[ -n $ARGUMENT_FIND ]]; then
         for DATABASE in $ARGUMENT_FIND; do
             echo "starting docker-compose project in $DATABASE"

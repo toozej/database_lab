@@ -1,7 +1,7 @@
 version: '3'
 services:
-  sqlite_single:
-    container_name: sqlite_single
+  sqlite-single:
+    container_name: sqlite-single
     image: nouchka/sqlite3:latest
     stdin_open: true
     tty: true

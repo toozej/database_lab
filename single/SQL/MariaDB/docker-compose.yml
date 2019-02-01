@@ -1,7 +1,7 @@
 version: '3'
 services:
-  mariadb_single:
-    container_name: mariadb_single
+  mariadb-single:
+    container_name: mariadb-single
     image: mariadb:latest
     ports:
       - "3307:3306"

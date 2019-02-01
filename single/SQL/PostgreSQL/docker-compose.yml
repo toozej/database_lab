@@ -1,10 +1,10 @@
 version: '3'
 services:
-  pgsql_single:
+  postgresql-single:
     image: postgres:latest
-    container_name: pgsql_single
+    container_name: postgresql-single
     env_file:
-      - pgsql.env
+      - postgresql.env
     volumes:
       - ./data:/var/lib/postgresql/data
     labels:
