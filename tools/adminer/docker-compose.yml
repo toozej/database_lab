@@ -6,7 +6,7 @@ services:
     restart: always
     ports:
       - "8014:8080"
-    labels: 
+    labels:
       - "traefik.frontend.rule=Host:adminer.lab.test"
       - "traefik.frontend.headers.STSSeconds=31536000"
       - "traefik.docker.network=traefik"
@@ -21,3 +21,4 @@ networks:
       name: traefik
   adminer:
     driver: bridge
+    name: adminer
