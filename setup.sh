@@ -9,6 +9,21 @@ CERTUTIL_BIN=`which certutil`
 DOCKER_DIR=~/docker
 DATABASE_LAB_DIR=~/docker/database_lab
 
+# internal function to create hostfile entry from $1
+function create_hostfile_entry(){
+	name=$1
+	if [ $name ]; then
+        # if there's not already a hostfile entry for $name, then add one
+        if ! grep -q "$name.lab.test" /etc/hosts; then
+            echo "127.0.0.1 $name.lab.test" | sudo tee -a /etc/hosts
+        else
+            echo "$name already exists in hostfile, skipping"
+        fi
+	else
+        echo "No name specified, aborting"
+	fi
+}
+
 # internal function to create a Docker network with name from $1
 function create_network(){
 	network_name=$1
@@ -27,7 +42,6 @@ function create_network(){
 
 
 echo "setting up database_lab"
-
 
 # ensure docker and database_lab dirs exist
 if [ ! -d "$DOCKER_DIR" ]; then
@@ -53,9 +67,7 @@ fi
 echo "setting up hostfile entries for database_lab projects"
 cd $DATABASE_LAB_DIR
 # if there's not already a hostfile entry for traefik, then add one
-if ! grep -q "traefik.lab.test" /etc/hosts; then
-    echo "127.0.0.1 traefik.lab.test" | sudo tee -a /etc/hosts
-fi
+create_hostfile_entry traefik
 
 for PROJECT in `find ./single ./clusters -mindepth 2 -maxdepth 2 -type d -not -path '*/\.*'`; do
     if [[ $PROJECT == *"clusters"* ]]; then
@@ -66,9 +78,7 @@ for PROJECT in `find ./single ./clusters -mindepth 2 -maxdepth 2 -type d -not -p
         ENTRY=`basename $PROJECT`
     fi
     # if there's not already a hostfile entry for $PROJECT, then add one
-    if ! grep -q "$ENTRY.lab.test" /etc/hosts; then
-        echo "127.0.0.1 $ENTRY.lab.test" | sudo tee -a /etc/hosts
-    fi
+    create_hostfile_entry $ENTRY
 done
 
 
