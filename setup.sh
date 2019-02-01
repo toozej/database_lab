@@ -52,6 +52,11 @@ fi
 # setup hostfile entries for projects
 echo "setting up hostfile entries for database_lab projects"
 cd $DATABASE_LAB_DIR
+# if there's not already a hostfile entry for traefik, then add one
+if ! grep -q "traefik.lab.test" /etc/hosts; then
+    echo "127.0.0.1 traefik.lab.test" | sudo tee -a /etc/hosts
+fi
+
 for PROJECT in `find ./single ./clusters -mindepth 2 -maxdepth 2 -type d -not -path '*/\.*'`; do
     if [[ $PROJECT == *"clusters"* ]]; then
         ENTRY=`basename $PROJECT"-cluster"`
