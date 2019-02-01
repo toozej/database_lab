@@ -121,9 +121,6 @@ $CERTUTIL_BIN -d sql:$HOME/.pki/nssdb -A -n '*.lab.test wildcard certificate' -i
 # create the Traefik network if not already created
 create_network traefik
 
-# create the Adminer network if not already created
-create_network adminer
-
 # create the cluster database networks if not already created
 cd $DATABASE_LAB_DIR
 for PROJECT in `find ./clusters/ -mindepth 2 -maxdepth 2 -type d -not -path '*/\.*'`; do
@@ -142,8 +139,8 @@ echo "starting tools"
 for PROJECT in `find $DATABASE_LAB_DIR/tools -mindepth 1 -maxdepth 1 -type d -not -path '*/\.*'`; do
     if [ ! -f "$PROJECT/.do_not_autorun" ]; then
         echo "starting docker-compose project in $PROJECT"
-        if [ ! -f $PROJECT/$PROJECT.env ]; then
-            cp $PROJECT/$PROJECT.env_sample $PROJECT/$PROJECT.env
+        if [ ! -f $PROJECT/`basename $PROJECT`.env ]; then
+            cp $PROJECT/`basename $PROJECT`.env_sample $PROJECT/`basename $PROJECT`.env
         fi
         sudo $DOCKER_COMPOSE_BIN -f $PROJECT/docker-compose.yml pull --ignore-pull-failures
         sudo $DOCKER_COMPOSE_BIN -f $PROJECT/docker-compose.yml up --build -d
