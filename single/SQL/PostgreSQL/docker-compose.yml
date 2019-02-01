@@ -1,0 +1,21 @@
+version: '3'
+services:
+  pgsql_single:
+    image: postgres:latest
+    container_name: pgsql_single
+    env_file:
+      - pgsql.env
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - adminer
+    restart: always
+networks:
+  traefik:
+    external:
+      name: traefik
+  adminer:
+    driver: bridge
+

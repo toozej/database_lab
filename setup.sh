@@ -9,6 +9,23 @@ CERTUTIL_BIN=`which certutil`
 DOCKER_DIR=~/docker
 DATABASE_LAB_DIR=~/docker/database_lab
 
+# internal function to create a Docker network with name from $1
+function create_network(){
+	network_name=$1
+	if [ $network_name ]; then
+        NETWORK_OUTPUT=`sudo docker network ls | awk '{print $2}' | grep --color=none $network_name`
+        if [ "$NETWORK_OUTPUT" != "$network_name" ]; then
+            echo "setting up $network_name network"
+            sudo $DOCKER_BIN network create $network_name
+        else
+            echo "$network_name network already exists, skipping."
+        fi
+	else
+        echo "No network name specified, aborting"
+	fi
+}
+
+
 echo "setting up database_lab"
 
 
@@ -35,13 +52,13 @@ fi
 # setup hostfile entries for projects
 echo "setting up hostfile entries for database_lab projects"
 cd $DATABASE_LAB_DIR
-for PROJECT in `find . -mindepth 2 -maxdepth 2 -type d -not -path '*/\.*'`; do
+for PROJECT in `find ./single ./clusters -mindepth 2 -maxdepth 2 -type d -not -path '*/\.*'`; do
     if [[ $PROJECT == *"clusters"* ]]; then
-        ENTRY=basename $PROJECT"-cluster"
+        ENTRY=`basename $PROJECT"-cluster"`
     elif [[ $PROJECT == *"single"* ]]; then
-        ENTRY=basename $PROJECT"-single"
+        ENTRY=`basename $PROJECT"-single"`
     else
-        ENTRY=basename $PROJECT
+        ENTRY=`basename $PROJECT`
     fi
     # if there's not already a hostfile entry for $PROJECT, then add one
     if ! grep -q "$ENTRY.lab.test" /etc/hosts; then
@@ -102,36 +119,48 @@ $CERTUTIL_BIN -d sql:$HOME/.pki/nssdb -A -n '*.lab.test wildcard certificate' -i
 
 
 # create the Traefik network if not already created
-TRAEFIK_NETWORK_OUTPUT=`sudo docker network ls | awk '{print $2}' | grep --color=none traefik`
-if [ "$TRAEFIK_NETWORK_OUTPUT" != "traefik" ]; then
-    echo "setting up traefik network"
-    sudo $DOCKER_BIN network create traefik
-else
-    echo "traefik network already exists, skipping."
-fi
+create_network traefik
+
+# create the Adminer network if not already created
+create_network adminer
 
 # create the cluster database networks if not already created
 cd $DATABASE_LAB_DIR
 for PROJECT in `find ./clusters/ -mindepth 2 -maxdepth 2 -type d -not -path '*/\.*'`; do
-    DATABASE=basename $PROJECT
-    CLUSTER_DATABASE_NETWORK_OUTPUT=`sudo docker network ls | awk '{print $2}' | grep --color=none $DATABASE-cluster`
-    if [ "$CLUSTER_DATABASE_NETWORK_OUTPUT" != "$DATABASE-cluster" ]; then
-        echo "setting up $DATABASE-cluster network"
-        sudo $DOCKER_BIN network create $DATABASE-cluster
-    else
-        echo "$DATABASE-cluster network already exists, skipping."
-    fi
+    DATABASE=`basename $PROJECT`
+    create_network $DATABASE-cluster
 done
 
 
-# pull images, build and start up projects
-for PROJECT in `find $DATABASE_LAB_DIR -mindepth 2 -maxdepth 2 -type d -not -path '*/\.*'`; do
+# pull, build and start up Traefik
+echo "starting Traefik"
+sudo $DOCKER_COMPOSE_BIN -f $DATABASE_LAB_DIR/traefik/docker-compose.yml pull --ignore-pull-failures
+sudo $DOCKER_COMPOSE_BIN -f $DATABASE_LAB_DIR/traefik/docker-compose.yml up --build -d
+
+# pull images, build and start up tools
+echo "starting tools"
+for PROJECT in `find $DATABASE_LAB_DIR/tools -mindepth 1 -maxdepth 1 -type d -not -path '*/\.*'`; do
     if [ ! -f "$PROJECT/.do_not_autorun" ]; then
         echo "starting docker-compose project in $PROJECT"
         sudo $DOCKER_COMPOSE_BIN -f $PROJECT/docker-compose.yml pull --ignore-pull-failures
         sudo $DOCKER_COMPOSE_BIN -f $PROJECT/docker-compose.yml up --build -d
     else
         echo "$PROJECT set to not auto-run, remove $PROJECT/.do_not_autorun if you want to change this."
+    fi
+done
+
+# pull images, build and start up database services for given command line arguments
+echo "starting database services from arguments"
+for ARGUMENT in "$@"; do
+    ARGUMENT_FIND=`find $DATABASE_LAB_DIR/single $DATABASE_LAB_DIR/clusters -mindepth 2 -maxdepth 2 -type d -not -path '*/\.*' | grep --color=none $ARGUMENT`
+    if [[ -n $ARGUMENT_FIND ]]; then
+        for DATABASE in $ARGUMENT_FIND; do
+            echo "starting docker-compose project in $DATABASE"
+            sudo $DOCKER_COMPOSE_BIN -f $DATABASE/docker-compose.yml pull --ignore-pull-failures
+            sudo $DOCKER_COMPOSE_BIN -f $DATABASE/docker-compose.yml up --build -d
+        done
+    else
+        echo "database service $DATABASE not found in $DATABASE_LAB_DIR/single or $DATABASE_LAB_DIR/clusters"
     fi
 done
 

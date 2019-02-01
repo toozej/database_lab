@@ -1,0 +1,20 @@
+version: '3'
+services:
+  mysql_single:
+    container_name: mysql_single
+    image: mysql:latest
+    restart: always
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - adminer
+    volumes:
+      - "./data:/var/lib/mysql"
+    env_file:
+      - mysql.env
+networks:
+  traefik:
+    external:
+      name: traefik
+  adminer:
+    driver: bridge

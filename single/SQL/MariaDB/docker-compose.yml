@@ -1,0 +1,22 @@
+version: '3'
+services:
+  mariadb_single:
+    container_name: mariadb_single
+    image: mariadb:latest
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./data:/var/lib/mysql
+    env_file:
+      - mariadb.env
+    restart: always
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - adminer
+networks:
+  traefik:
+    external:
+      name: traefik
+  adminer:
+    driver: bridge
