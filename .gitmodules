@@ -1,3 +1,6 @@
 [submodule "testers/etcd-dbtester"]
 	path = testers/etcd-dbtester
 	url = https://github.com/etcd-io/dbtester
+[submodule "seed_data/datacharmer-test_db"]
+	path = seed_data/datacharmer-test_db
+	url = https://github.com/datacharmer/test_db
