@@ -142,6 +142,9 @@ echo "starting tools"
 for PROJECT in `find $DATABASE_LAB_DIR/tools -mindepth 1 -maxdepth 1 -type d -not -path '*/\.*'`; do
     if [ ! -f "$PROJECT/.do_not_autorun" ]; then
         echo "starting docker-compose project in $PROJECT"
+        if [ ! -f $PROJECT/$PROJECT.env ]; then
+            cp $PROJECT/$PROJECT.env_sample $PROJECT/$PROJECT.env
+        fi
         sudo $DOCKER_COMPOSE_BIN -f $PROJECT/docker-compose.yml pull --ignore-pull-failures
         sudo $DOCKER_COMPOSE_BIN -f $PROJECT/docker-compose.yml up --build -d
     else
