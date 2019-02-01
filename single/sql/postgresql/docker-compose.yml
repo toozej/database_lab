@@ -13,9 +13,6 @@ services:
       - adminer
     restart: always
 networks:
-  traefik:
-    external:
-      name: traefik
   adminer:
-    driver: bridge
-
+    external:
+      name: adminer

@@ -15,8 +15,6 @@ services:
     networks:
       - adminer
 networks:
-  traefik:
-    external:
-      name: traefik
   adminer:
-    driver: bridge
+    external:
+      name: adminer
