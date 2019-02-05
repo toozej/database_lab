@@ -1,3 +1,8 @@
 *.env
-/single/**/**/data*
-/clusters/**/**/data*
+# exclude files in data directories from git
+/single/**/**/data/*
+/clusters/**/**/data/*
+
+# include the data directories themselves in git
+!/single/**/**/data/.gitkeep
+!/clusters/**/**/data/.gitkeep
