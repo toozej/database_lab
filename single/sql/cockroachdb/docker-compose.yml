@@ -1,0 +1,21 @@
+version: '3'
+services:
+  cockroachdb-single:
+    container_name: cockroachdb-single
+    hostname: cockroachdb-single
+    image: cockroachdb/cockroach:v2.1.5
+    restart: always
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - adminer
+    ports:
+      - "26257:26257"
+      - "8080:8080"
+    volumes:
+      - "./data:/cockroach/cockroach-data"
+    command: "start --insecure"
+networks:
+  adminer:
+    external:
+      name: adminer
