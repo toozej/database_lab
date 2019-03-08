@@ -1,0 +1,23 @@
+version: '3'
+services:
+  cratedb-single:
+    container_name: cratedb-single
+    hostname: cratedb-single
+    image: crate:latest
+    restart: always
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - adminer
+    ports:
+      - "4200:4200"
+      - "5431:5432"
+    volumes:
+      - "./data:/data"
+    env_file:
+      - "./cratedb.env"
+    command: crate -Cnode.name=cratedb-single
+networks:
+  adminer:
+    external:
+      name: adminer
