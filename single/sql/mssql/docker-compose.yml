@@ -1,0 +1,20 @@
+version: '3'
+services:
+  mssql-single:
+    container_name: mssql-single
+    image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+    restart: always
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - adminer
+    volumes:
+      - "./data:/var/opt/mssql"
+    ports:
+      - "1433:1433"
+    env_file:
+      - mssql.env
+networks:
+  adminer:
+    external:
+      name: adminer
