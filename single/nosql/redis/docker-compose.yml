@@ -1,0 +1,17 @@
+version: '3'
+services:
+  redis-single:
+    container_name: redis-single
+    image: redis:alpine
+    restart: always
+    labels:
+      - "traefik.enable=false"
+    volumes:
+      - "./config/redis.conf:/usr/local/etc/redis/redis.conf"
+      - "./data:/data"
+    networks:
+      - adminer
+networks:
+  adminer:
+    external:
+      name: adminer

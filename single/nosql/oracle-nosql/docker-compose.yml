@@ -1,0 +1,20 @@
+version: '3'
+services:
+  oracle-nosql-single:
+    container_name: oracle-nosql-single
+    image: oracle/nosql:latest
+    restart: always
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - adminer
+    ports:
+      - "5000:5000"
+    volumes:
+      - "./data:/kvroot"
+    env_file:
+      - oracle-nosql.env
+networks:
+  adminer:
+    external:
+      name: adminer
