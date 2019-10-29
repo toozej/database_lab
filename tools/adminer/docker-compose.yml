@@ -3,7 +3,7 @@ services:
   adminer:
     image: adminer:latest
     container_name: "adminer"
-    restart: always
+    restart: unless-stopped
     ports:
       - "8014:8080"
     labels:

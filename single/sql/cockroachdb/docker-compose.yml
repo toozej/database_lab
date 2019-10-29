@@ -4,7 +4,7 @@ services:
     container_name: cockroachdb-single
     hostname: cockroachdb-single
     image: cockroachdb/cockroach:v2.1.5
-    restart: always
+    restart: unless-stopped
     labels:
       - "traefik.enable=false"
     networks:

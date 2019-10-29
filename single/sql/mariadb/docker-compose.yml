@@ -9,7 +9,7 @@ services:
       - ./data:/var/lib/mysql
     env_file:
       - mariadb.env
-    restart: always
+    restart: unless-stopped
     labels:
       - "traefik.enable=false"
     networks:

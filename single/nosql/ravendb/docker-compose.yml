@@ -1,19 +1,20 @@
 version: '3'
 services:
-  oracle-nosql-single:
-    container_name: oracle-nosql-single
-    image: oracle/nosql:latest
+  ravendb-single:
+    container_name: ravendb-single
+    image: ravendb/ravendb:latest
     restart: unless-stopped
     labels:
       - "traefik.enable=false"
     networks:
       - adminer
     ports:
-      - "5000:5000"
+      - "8081:8080"
     volumes:
-      - "./data:/kvroot"
+      - "./data:/opt/RavenDB/Server/RavenData"
+      - "./config:/opt/RavenDB/config"
     env_file:
-      - oracle-nosql.env
+      - ravendb.env
 networks:
   adminer:
     external:
