@@ -1,7 +1,7 @@
 #!/bin/bash
 # binaries to be used
 DOCKER_BIN=`which docker`
-DOCKER_COMPOSE_BIN=`which docker-compose`
+DOCKER_COMPOSE_BIN="${DOCKER_BIN} compose"
 OPENSSL_BIN=`which openssl`
 CERTUTIL_BIN=`which certutil`
 
